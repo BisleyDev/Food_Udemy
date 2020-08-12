@@ -119,24 +119,26 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	// Trigger
 	const btnsTrigger = document.querySelectorAll('[data-modal]'),
-			modalWindow = document.querySelector('.modal'),
-			modalWindowClose = document.querySelector('.modal__close');
+			modalWindow = document.querySelector('.modal');
 
 	function openModalWindow() {
 		modalWindow.style.display = 'block';
 		document.body.style.overflow = 'hidden';
 
-		modalWindowClose.addEventListener( 'click', closeModalWindow);
 		modalWindow.addEventListener( 'click', closeModalWindow);
 		document.addEventListener( 'keydown', closeModalWindow);
+		clearInterval(modalTimerId);
+	}
+
+	function closeModal() {
+		modalWindow.style.display = 'none';
+		document.body.style.overflow = '';
+		window.removeEventListener('scroll', followScrollForModal);
 	}
 
 	function closeModalWindow(event) {
-		if (event.target == modalWindowClose|| event.target === modalWindow || event.code == 'Escape') {
-			modalWindow.style.display = 'none';
-			document.body.style.overflow = '';
-			window.removeEventListener('scroll', followScrollForModal);
-
+		if (event.target.getAttribute('data-close') == '' || event.target === modalWindow || event.code == 'Escape') {
+			closeModal();
 		}
 	}
 
@@ -209,66 +211,108 @@ window.addEventListener('DOMContentLoaded', () => {
 		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!', 
 		9.5, 
 		'.menu__field .container'
+	);
+	new MenuCardInDay(
+		"img/tabs/elite.jpg", 
+		"elite", 'Меню “Премиум”', 
+		'Меню “Премиум” - мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
+		9.7,
+		'.menu__field .container'
 		);
+	new MenuCardInDay(
+		"img/tabs/post.jpg", 
+		"post", 'Меню “Постное”', 
+		'Наше специальное “Постное меню” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения. Полная гармония с собой и природой в каждом элементе! Все будет Ом!',
+		9.0,
+		'.menu__field .container'
+		);
+	new MenuCardInDay(
+		"img/tabs/vegy.jpg", 
+		"vegy", 'Меню "Сбалансированное"', 
+		'Меню "Сбалансированное" - это соответствие вашего рациона всем научным рекомендациям. Мы тщательно просчитываем вашу потребность в к/б/ж/у и создаем лучшие блюда для вас.', 
+		9.4, 
+		'.menu__field .container'
+	);
 
 
 
 
 	// Form
 
-		const forms = document.querySelectorAll('form');
-		const statusMesage = {
-			loading: 'Загрузка данных на сервер, ожидайте...',
-			success: 'Успешно, скоро мы с вами свяжемся.',
-			failure: 'Что-то пошло не так, повторите действие.'
-		};
+	const forms = document.querySelectorAll('form');
+	const statusMessage = {
+		loading: './Images/spinner.svg',
+		success: 'Успешно, скоро мы с вами свяжемся.',
+		failure: 'Что-то пошло не так, повторите действие.'
+	};
 
+	function createMessageLoad(form) {
+		const messageLoad = document.createElement('img');
+		messageLoad.src = statusMessage.loading;
+		messageLoad.style.cssText = `
+			display: block;
+			margin: 0 auto;
+		`;
+		form.insertAdjacentElement('afterend', messageLoad);
+		setTimeout(() => {
+			messageLoad.remove();
+		}, 4000);
+	}
 
+	forms.forEach((form) => {
+		form.addEventListener('submit', (event) => {
 
+			event.preventDefault();
+			createMessageLoad(form);
+		
 
-		forms.forEach((form) => {
-			form.addEventListener('submit', (event) => {
-				event.preventDefault();
+			const request = new XMLHttpRequest();
+			request.open('POST', 'server.php');
+			request.setRequestHeader('Content-type', 'application/json');
+			const formData = new FormData(form);
+			const objectFormData = {};
 
-				const createStatusMessage = document.createElement('div');
-				createStatusMessage.classList.add('status');
-				createStatusMessage.textContent = statusMesage.message;
-				form.append(createStatusMessage);
+			formData.forEach((value, key) => {					
+				objectFormData[key] = value;					
+			});
 
-				const clearStatusMessage = () => {
-					setTimeout(() => {
-						createStatusMessage.remove();
-					}, 2000);
-				};
+			request.send(JSON.stringify(objectFormData));
 
-				const request = new XMLHttpRequest();
-				request.open('POST', 'server.php');
-				request.setRequestHeader('Content-type', 'application/json');
-				const formData = new FormData(form);
-				const objectFormData = {};
+			request.addEventListener('load', () => {
+				if (request.status === 200) {
+					console.log(request.response);
+					showThanksModal(statusMessage.success);
+					form.reset();
 
-				formData.forEach((value, key) => {					
-					objectFormData[key] = value;					
-				});
-
-				request.send(JSON.stringify(objectFormData));
-
-				request.addEventListener('load', () => {
-					if (request.status === 200) {
-						console.log(request);
-						createStatusMessage.textContent = statusMesage.success;
-						clearStatusMessage();
-						form.reset();
-
-					} else {
-						createStatusMessage.textContent = statusMesage.failure;
-						clearStatusMessage();
-					}
-				});
-
+				} else {
+					showThanksModal(statusMessage.failure);
+				}
 			});
 		});
+	});
 
+	function showThanksModal(massege) {
+		document.querySelector('.modal__dialog').classList.add('hide');
+		openModalWindow();
+
+		const thanksModal = document.createElement('div');
+		thanksModal.classList.add('modal__dialog');
+		thanksModal.innerHTML = `
+			<div class="modal__content">
+				<div class="modal__close" data-close>&times;</div>
+				<div class="modal__title">${massege}</div>
+			</div>
+		`;
+		document.querySelector('.modal').append(thanksModal);
+
+		setTimeout(() => {
+			thanksModal.remove();
+
+			document.querySelector('.modal__dialog').classList.add('show');
+			document.querySelector('.modal__dialog').classList.remove('hide');
+			closeModal();
+		}, 4000);
+	}
 
 
 });
