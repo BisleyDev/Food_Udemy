@@ -1,0 +1,22 @@
+{
+  "name": "food",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BisleyDev/Food_Udemy.git"
+  },
+  "author": "Andrii Kulyk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BisleyDev/Food_Udemy/issues"
+  },
+  "homepage": "https://github.com/BisleyDev/Food_Udemy#readme",
+  "devDependencies": {
+    "json-server": "^0.16.1"
+  }
+}
