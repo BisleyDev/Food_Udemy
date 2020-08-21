@@ -162,7 +162,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 
 	appModalWindow();
-	const modalTimerId = setTimeout(openModalWindow, 10000);
+	const modalTimerId = setTimeout(openModalWindow, 50000);
 	window.addEventListener('scroll', followScrollForModal);
 
 	// Использование классов для карточек
@@ -183,6 +183,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 		changeToUAH() {
 			this.price = this.price * this.transfer;
+
 		}
 
 		renderCard() {
@@ -205,39 +206,21 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	new MenuCardInDay(
-		"img/tabs/vegy.jpg", 
-		"vegy", 'Меню "Фитнес"', 
-		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!', 
-		9.5, 
-		'.menu__field .container'
-	);
-	new MenuCardInDay(
-		"img/tabs/elite.jpg", 
-		"elite", 'Меню “Премиум”', 
-		'Меню “Премиум” - мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-		9.7,
-		'.menu__field .container'
+	fetch('http://localhost:3000/menu')
+	.then(data=>data.json())
+	.then(res=>res.forEach((value) => {
+		new MenuCardInDay(
+			value.img,
+			value.altimg,
+			value.title,
+			value.descr,
+			value.price,
+			'.menu__field .container'
 		);
-	new MenuCardInDay(
-		"img/tabs/post.jpg", 
-		"post", 'Меню “Постное”', 
-		'Наше специальное “Постное меню” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения. Полная гармония с собой и природой в каждом элементе! Все будет Ом!',
-		9.0,
-		'.menu__field .container'
-		);
-	new MenuCardInDay(
-		"img/tabs/vegy.jpg", 
-		"vegy", 'Меню "Сбалансированное"', 
-		'Меню "Сбалансированное" - это соответствие вашего рациона всем научным рекомендациям. Мы тщательно просчитываем вашу потребность в к/б/ж/у и создаем лучшие блюда для вас.', 
-		9.4, 
-		'.menu__field .container'
-	);
+	}));
 
 
-
-
-	// Form
+	// Send form
 
 	const forms = document.querySelectorAll('form');
 	const statusMessage = {
@@ -246,7 +229,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		failure: 'Что-то пошло не так, повторите действие.'
 	};
 
-	function createMessageLoad(form) {
+	const messageLoading = (form) => {
 		const messageLoad = document.createElement('img');
 		messageLoad.src = statusMessage.loading;
 		messageLoad.style.cssText = `
@@ -257,41 +240,9 @@ window.addEventListener('DOMContentLoaded', () => {
 		setTimeout(() => {
 			messageLoad.remove();
 		}, 4000);
-	}
+	};
 
-	forms.forEach((form) => {
-		form.addEventListener('submit', (event) => {
-
-			event.preventDefault();
-			createMessageLoad(form);
-		
-
-			const request = new XMLHttpRequest();
-			request.open('POST', 'server.php');
-			request.setRequestHeader('Content-type', 'application/json');
-			const formData = new FormData(form);
-			const objectFormData = {};
-
-			formData.forEach((value, key) => {					
-				objectFormData[key] = value;					
-			});
-
-			request.send(JSON.stringify(objectFormData));
-
-			request.addEventListener('load', () => {
-				if (request.status === 200) {
-					console.log(request.response);
-					showThanksModal(statusMessage.success);
-					form.reset();
-
-				} else {
-					showThanksModal(statusMessage.failure);
-				}
-			});
-		});
-	});
-
-	function showThanksModal(massege) {
+	const showThanksModal = massege => {
 		document.querySelector('.modal__dialog').classList.add('hide');
 		openModalWindow();
 
@@ -312,15 +263,163 @@ window.addEventListener('DOMContentLoaded', () => {
 			document.querySelector('.modal__dialog').classList.remove('hide');
 			closeModal();
 		}, 4000);
-	}
+	};
 
-	fetch('http://localhost:3000/menu')
-		.then(data=>data.json())
-		.then(res=>res.forEach((value) => {
-			console.log();
-		}));
+	const createSendObject = form => {
+		const formData = new FormData(form);
+		const objectFormData = {};
+
+		formData.forEach((value, key) => {					
+			objectFormData[key] = value;					
+		});
+		return JSON.stringify(objectFormData);
+	};
+
+	const postData = async (url, data) => {
+		const response = await fetch(url, {
+			method: 'POST',
+			body: data,
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		return await response.json();
+	};
+
+	forms.forEach((form) => {
+		form.addEventListener('submit', (event) => {
+			event.preventDefault();
+			messageLoading(form);
+
+			postData('http://localhost:3000/requests', createSendObject(form))
+			.then((data) => {
+				console.log(data);
+				showThanksModal(statusMessage.success);
+			})
+			.catch(() => showThanksModal(statusMessage.failure))
+			.finally(() => form.reset());
+		});
+	});
+
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// function createMessageLoad(form) {
+	// 	const messageLoad = document.createElement('img');
+	// 	messageLoad.src = statusMessage.loading;
+	// 	messageLoad.style.cssText = `
+	// 		display: block;
+	// 		margin: 0 auto;
+	// 	`;
+	// 	form.insertAdjacentElement('afterend', messageLoad);
+	// 	setTimeout(() => {
+	// 		messageLoad.remove();
+	// 	}, 4000);
+	// }
+
+	// forms.forEach((form) => {
+	// 	form.addEventListener('submit', (event) => {
+
+	// 		event.preventDefault();
+	// 		createMessageLoad(form);
 		
 
+	// 		const request = new XMLHttpRequest();
+	// 		request.open('POST', 'server.php');
+	// 		request.setRequestHeader('Content-type', 'application/json');
+	// 		const formData = new FormData(form);
+	// 		const objectFormData = {};
+
+	// 		formData.forEach((value, key) => {					
+	// 			objectFormData[key] = value;					
+	// 		});
+
+	// 		request.send(JSON.stringify(objectFormData));
+
+	// 		request.addEventListener('load', () => {
+	// 			if (request.status === 200) {
+	// 				console.log(request.response);
+	// 				showThanksModal(statusMessage.success);
+	// 				form.reset();
+
+	// 			} else {
+	// 				showThanksModal(statusMessage.failure);
+	// 			}
+	// 		});
+	// 	});
+	// });
+
+	// function showThanksModal(massege) {
+	// 	document.querySelector('.modal__dialog').classList.add('hide');
+	// 	openModalWindow();
+
+	// 	const thanksModal = document.createElement('div');
+	// 	thanksModal.classList.add('modal__dialog');
+	// 	thanksModal.innerHTML = `
+	// 		<div class="modal__content">
+	// 			<div class="modal__close" data-close>&times;</div>
+	// 			<div class="modal__title">${massege}</div>
+	// 		</div>
+	// 	`;
+	// 	document.querySelector('.modal').append(thanksModal);
+
+	// 	setTimeout(() => {
+	// 		thanksModal.remove();
+
+	// 		document.querySelector('.modal__dialog').classList.add('show');
+	// 		document.querySelector('.modal__dialog').classList.remove('hide');
+	// 		closeModal();
+	// 	}, 4000);
+	// }
 
 });
 
