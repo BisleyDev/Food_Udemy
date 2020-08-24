@@ -296,6 +296,60 @@ window.addEventListener('DOMContentLoaded', () => {
 			.catch(() => showThanksModal(statusMessage.failure))
 			.finally(() => form.reset());
 		});
+
+		//___________ Slider #1
+
+		const offerSlide = document.querySelector('.offer__slide');
+		const offerSliderPrev = document.querySelector('.offer__slider-prev');
+		const offerSliderNext = document.querySelector('.offer__slider-next');
+		const current = document.querySelector('#current');
+		const total = document.querySelector('#total');
+
+		const dataImg = ['img/slider/food-12.jpg', 
+								'img/slider/olive-oil.jpg', 
+								'img/slider/paprika.jpg', 
+								'img/slider/pepper.jpg'];
+		
+		let numberImg = 0;
+
+		function defaultStart() {
+			current.textContent = checkZeroInNumber(numberImg + 1);
+			total.textContent = checkZeroInNumber(dataImg.length);
+			renderImg(numberImg);
+		}		
+
+		function checkZeroInNumber(number) {
+			return  number < 10 ? '0' + number : number;
+		}
+
+		function renderImg(index) {
+			offerSlide.textContent = '';
+			const newImg = document.createElement('img');
+			newImg.src = dataImg[index];
+			newImg.alt = (dataImg[index].replace('img/slider/', '')).replace('.jpg', '');
+			// offerSlide.insertAdjacentElement('afterbegin', newImg);
+			document.querySelector('.offer__slide').append(newImg);
+
+		}
+
+		const clickNextImg = () => {
+			current.textContent = '';
+			(dataImg.length === numberImg + 1) ? numberImg = 0 : numberImg += 1 ;
+			renderImg(numberImg);
+			current.textContent = checkZeroInNumber(numberImg + 1);
+		};
+		const clickPrevImg = () => {
+			current.textContent = '';
+			(numberImg === 0) ? numberImg = dataImg.length - 1 : numberImg -= 1 ;
+			renderImg(numberImg);
+			current.textContent = checkZeroInNumber(numberImg + 1);
+		};
+
+
+		defaultStart();
+		offerSliderNext.addEventListener('click', clickNextImg);
+		offerSliderPrev.addEventListener('click', clickPrevImg);
+
 	});
 
 		
