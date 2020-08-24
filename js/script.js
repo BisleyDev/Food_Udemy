@@ -39,7 +39,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	tabsParent.addEventListener('click', searchTab);
 
 	// Timer
-	const deadline = '2020-08-28T12:00';
+	const deadline = '2020-10-10T12:00';
 
 	function getTimeRemaining(endtime) {
 		const total = Date.parse(endtime) - Date.now(),
@@ -177,16 +177,12 @@ window.addEventListener('DOMContentLoaded', () => {
 			this.parentSelector = document.querySelector(parentSelector);
 			this.classes = classes;
 			this.transfer = 27;
-			this.changeToUAH();
 			this.renderCard();
 		}
 
-		changeToUAH() {
+		renderCard() {
 			this.price = this.price * this.transfer;
 
-		}
-
-		renderCard() {
 			const card = document.createElement('div');
 			if ( this.classes.length === 0 ) {
 				card.classList.add("menu__item");
@@ -206,21 +202,29 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	fetch('http://localhost:3000/menu')
-	.then(data=>data.json())
-	.then(res=>res.forEach((value) => {
-		new MenuCardInDay(
-			value.img,
-			value.altimg,
-			value.title,
-			value.descr,
-			value.price,
-			'.menu__field .container'
-		);
-	}));
+	// ______________Get information with card
+
+	axios.get('http://localhost:3000/menu')
+		.then(elem => {elem.data.forEach(({img, altimg, title, descr, price}) => {
+			new MenuCardInDay( img, altimg, title, descr, price,'.menu__field .container' );
+		})});
+
+	// const getResource = async (url) => {
+	// 	const res = await fetch(url);
+
+	// 	if(!res.ok) {
+	// 		throw new Error(`Could not fetch ${url}, status: ${res.status}`)
+	// 	}
+	// 	return await res.json();
+	// };
+
+	// getResource('http://localhost:3000/menu')
+	// .then( data => data.forEach(({img, altimg, title, descr, price,}) => {
+	// 	new MenuCardInDay( img, altimg, title, descr, price,'.menu__field .container');
+	// }));
 
 
-	// Send form
+	//____________ Send form
 
 	const forms = document.querySelectorAll('form');
 	const statusMessage = {
@@ -265,16 +269,6 @@ window.addEventListener('DOMContentLoaded', () => {
 		}, 4000);
 	};
 
-	const createSendObject = form => {
-		const formData = new FormData(form);
-		const objectFormData = {};
-
-		formData.forEach((value, key) => {					
-			objectFormData[key] = value;					
-		});
-		return JSON.stringify(objectFormData);
-	};
-
 	const postData = async (url, data) => {
 		const response = await fetch(url, {
 			method: 'POST',
@@ -290,8 +284,11 @@ window.addEventListener('DOMContentLoaded', () => {
 		form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			messageLoading(form);
+			const formData = new FormData(form);
+			const data = JSON.stringify(Object.fromEntries(formData.entries()));
+			console.log('data: ', data);
 
-			postData('http://localhost:3000/requests', createSendObject(form))
+			postData('http://localhost:3000/requests', data)
 			.then((data) => {
 				console.log(data);
 				showThanksModal(statusMessage.success);
@@ -350,9 +347,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	
 	
 	
-	
-	
-	
+
 	// function createMessageLoad(form) {
 	// 	const messageLoad = document.createElement('img');
 	// 	messageLoad.src = statusMessage.loading;
