@@ -296,110 +296,193 @@ window.addEventListener('DOMContentLoaded', () => {
 			.catch(() => showThanksModal(statusMessage.failure))
 			.finally(() => form.reset());
 		});
-
-		//___________ Slider #1
-
-		const offerSlide = document.querySelector('.offer__slide');
-		const offerSliderPrev = document.querySelector('.offer__slider-prev');
-		const offerSliderNext = document.querySelector('.offer__slider-next');
-		const current = document.querySelector('#current');
-		const total = document.querySelector('#total');
-
-		const dataImg = ['img/slider/food-12.jpg', 
-								'img/slider/olive-oil.jpg', 
-								'img/slider/paprika.jpg', 
-								'img/slider/pepper.jpg'];
-		
-		let numberImg = 0;
-
-		function defaultStart() {
-			current.textContent = checkZeroInNumber(numberImg + 1);
-			total.textContent = checkZeroInNumber(dataImg.length);
-			renderImg(numberImg);
-		}		
-
-		function checkZeroInNumber(number) {
-			return  number < 10 ? '0' + number : number;
-		}
-
-		function renderImg(index) {
-			offerSlide.textContent = '';
-			const newImg = document.createElement('img');
-			newImg.src = dataImg[index];
-			newImg.alt = (dataImg[index].replace('img/slider/', '')).replace('.jpg', '');
-			// offerSlide.insertAdjacentElement('afterbegin', newImg);
-			document.querySelector('.offer__slide').append(newImg);
-
-		}
-
-		const clickNextImg = () => {
-			current.textContent = '';
-			(dataImg.length === numberImg + 1) ? numberImg = 0 : numberImg += 1 ;
-			renderImg(numberImg);
-			current.textContent = checkZeroInNumber(numberImg + 1);
-		};
-		const clickPrevImg = () => {
-			current.textContent = '';
-			(numberImg === 0) ? numberImg = dataImg.length - 1 : numberImg -= 1 ;
-			renderImg(numberImg);
-			current.textContent = checkZeroInNumber(numberImg + 1);
-		};
-
-
-		defaultStart();
-		offerSliderNext.addEventListener('click', clickNextImg);
-		offerSliderPrev.addEventListener('click', clickPrevImg);
-
 	});
 
-		
+	//___________ Slider #1
+
+	const slider = document.querySelector('.offer__slider');
+	const offerSlide = document.querySelector('.offer__slide');
+	const offerSliderPrev = document.querySelector('.offer__slider-prev');
+	const offerSliderNext = document.querySelector('.offer__slider-next');
+	const current = document.querySelector('#current');
+	const total = document.querySelector('#total');
+
+	const dataImg = ['img/slider/food-12.jpg', 
+							'img/slider/olive-oil.jpg', 
+							'img/slider/paprika.jpg', 
+							'img/slider/pepper.jpg'];
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	let numberImg = 0;
+
+	function defaultStart() {
+		current.textContent = checkZeroInNumber(numberImg + 1);
+		total.textContent = checkZeroInNumber(dataImg.length);
+		renderImg(numberImg);
+		createSliderIndicator();
+	}		
+
+	function checkZeroInNumber(number) {
+		return  number < 10 ? '0' + number : number;
+	}
+
+	function renderImg(index) {
+		offerSlide.textContent = '';
+		const newImg = document.createElement('img');
+		newImg.src = dataImg[index];
+		newImg.alt = (dataImg[index].replace('img/slider/', '')).replace('.jpg', '');
+		// offerSlide.insertAdjacentElement('afterbegin', newImg);
+		offerSlide.append(newImg);
+	}
+
+	// const clickNextImg = () => {
+	// 	current.textContent = '';
+	// 	(dataImg.length === numberImg + 1) ? numberImg = 0 : numberImg += 1 ;
+	// 	renderImg(numberImg);
+	// 	current.textContent = checkZeroInNumber(numberImg + 1);
+	// };
+	// const clickPrevImg = () => {
+	// 	current.textContent = '';
+	// 	(numberImg === 0) ? numberImg = dataImg.length - 1 : numberImg -= 1 ;
+	// 	renderImg(numberImg);
+	// 	current.textContent = checkZeroInNumber(numberImg + 1);
+	// };
+
+	function clickChangeSlider(event) {
+		current.textContent = '';
+		if(event.target.closest('.offer__slider-next') == offerSliderNext) {
+			(dataImg.length === numberImg + 1) ? numberImg = 0 : numberImg += 1 ;
+		} else {
+			(numberImg === 0) ? numberImg = dataImg.length - 1 : numberImg -= 1 ;
+		}
+		renderImg(numberImg);
+		current.textContent = checkZeroInNumber(numberImg + 1);		
+		createSliderIndicator();
+	}
+
+
+	defaultStart();
+	offerSliderNext.addEventListener('click', clickChangeSlider);
+	offerSliderPrev.addEventListener('click', clickChangeSlider);
+
+
+	//____ carusel indicator
+
+
+	function createSliderIndicator() {
+		if(document.querySelector('.carousel-indicators')) {
+			document.querySelector('.carousel-indicators').remove();
+		}
+		slider.style.position = 'relative';
+		const carouselIndicators = document.createElement('ol');
+		carouselIndicators.classList.add('carousel-indicators');		
+		slider.append(carouselIndicators);
+
+		for( let i = 0 ; i < dataImg.length; i++ ) {
+			let dotIndicator = document.createElement('li');
+			dotIndicator.classList.add('dot');
+			dotIndicator.setAttribute('data-slider', i);
+			carouselIndicators.append(dotIndicator);
+
+			dotIndicator.addEventListener('click', () => {
+				document.querySelectorAll('.dot').forEach(elem => elem.style.opacity = '0.5');
+				renderImg(i);
+				current.textContent = checkZeroInNumber(i + 1);
+				dotIndicator.style.opacity = '1';
+
+			});
+			
+			if(dotIndicator.dataset.slider == numberImg) {
+				dotIndicator.style.opacity = '1';
+			}
+		}
+	}
+
+	// _______ calc
+
+	const result = document.querySelector('.calculating__result span');
+	let sex, weight, height, age, ratio;
+
+	function initLocalSettings() {
+		document.querySelectorAll('.calculating__choose-item').forEach(elem => {
+			elem.classList.remove('calculating__choose-item_active');
+		});
+		sex = (localStorage.getItem('sex')) ? localStorage.getItem('sex') : 'female';
+		ratio = (localStorage.getItem('ratio')) ? localStorage.getItem('ratio') : '1.375';
+		document.querySelector(`#${sex}`).classList.add('calculating__choose-item_active');
+		document.querySelectorAll('.calculating__choose_big div').forEach(elem => {
+			if(elem.dataset.ratio == ratio) {
+				elem.classList.add('calculating__choose-item_active');
+			}
+		});
+	}
+	initLocalSettings();
+
+	function totalResult(sex, ratio) {
+		if(!sex || !weight || !height || !age || !ratio) {
+			result.textContent = '____';
+			return;
+		}
+		if(sex === 'male') {
+			result.textContent = Math.floor((88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)) * ratio);
+		} else {
+			result.textContent = Math.floor((447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)) * ratio);
+		}
+	}
+	totalResult(sex, ratio);
+
+	function staticInfoUser(parrentSelector, activeClass) {
+		const elements = document.querySelectorAll(`${parrentSelector} div`);
+		elements.forEach(elem => {
+			elem.addEventListener('click', event => {
+				elements.forEach(elem => {
+					elem.classList.remove(activeClass);
+				});
+
+				if(event.target.getAttribute('data-ratio')) {
+					ratio = +event.target.getAttribute('data-ratio');
+					localStorage.setItem('ratio', ratio);
+				} else {
+					sex = event.target.getAttribute('id');
+					localStorage.setItem('sex', sex);
+
+				}
+				event.target.classList.add(activeClass);
+				totalResult(sex, ratio);
+			});
+		});				
+	}
+	staticInfoUser('.calculating__choose_big', 'calculating__choose-item_active');
+	staticInfoUser('#gender', 'calculating__choose-item_active');
+
+	function dinamicInfoUser() {
+		const inputs = document.querySelectorAll('.calculating__choose_medium input');
+		inputs.forEach( input => {
+			input.addEventListener('input', () => {
+				if (input.value.match(/\D/ig)) {
+					input.style.border = "2px solid red";
+				} else {
+					input.style.border = "none";
+				}
+				switch (input.id) {
+					case 'weight':
+						weight = +input.value;
+						break;
+					case 'height':
+						height = +input.value;
+						break;
+					case 'age':
+						age = +input.value;
+						break;
+				}
+				totalResult(sex, ratio);
+			});
+		});		
+	}
+	dinamicInfoUser();
+
+
+
+
 	
 
 	// function createMessageLoad(form) {
